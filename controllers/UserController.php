@@ -22,10 +22,10 @@ class UserController extends Controller
                 'ruleConfig' => [
                     'class' => AccessRule::className(),
                 ],
-                'only' => ['home', 'create', 'chat', 'message'],
+                'only' => ['home', 'create', 'chat', 'message', 'read'],
                 'rules' => [
                     [
-                        'actions' => ['home', 'chat', 'message'],
+                        'actions' => ['home', 'chat', 'message', 'read'],
                         'allow' => true,
                         'roles' => [
                             User::ROLE_USER,
@@ -53,6 +53,7 @@ class UserController extends Controller
                     'create' => ['get', 'post'],
                     'chat' => ['get'],
                     'message' => ['post'],
+                    'read' => ['post'],
                 ],
             ],
         ];
@@ -73,9 +74,13 @@ class UserController extends Controller
     public function actionChat($id)
     {
         $current_user = Yii::$app->user->identity;
-        $users = User::find()->where(['status' => 1])
-                             ->andWhere(['<>', 'id', $current_user->id])
-                             ->all();
+        $users = User::find()->with([
+            'sentNotifications' => function ($query) {
+                $query->andWhere(['status' => 1, 'read' => 0]);
+            },
+        ])->where(['status' => 1])
+          ->andWhere(['<>', 'id', $current_user->id])
+          ->all();
 
         $message = new Message;
 
@@ -142,9 +147,21 @@ class UserController extends Controller
         $message->message = $content;
         $message->user_id_from = $current_user->id;
         if ($message->validate()) {
-            $message->save();
-            $for_user->notify($message);
-            
+
+            $transaction = Yii::$app->db->beginTransaction();
+            try {
+                $message->save();
+                $for_user->notify($message);
+                $transaction->commit();
+            } catch (\Exception $e) {
+                $transaction->rollBack();
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Something went wrong!'
+                ]);
+                die;
+            }
+
             echo json_encode([
                 'success' => true,
                 'message' => 'Message sent successfully!'
@@ -160,11 +177,59 @@ class UserController extends Controller
     }
 
 
+    public function actionRead()
+    {
+        if (!Yii::$app->request->isAjax) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Method denied!'
+            ]);
+            die;
+        }
+
+        if (!isset($_REQUEST['for_user'])) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Something went wrong!'
+            ]);
+            die;
+        }
+
+        $for = $_REQUEST['for_user'];
+        $current_user = Yii::$app->user->identity;
+
+        $for_user = User::findOne($for);
+        if (empty($for_user)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'The requested user does not exists!'
+            ]);
+            die;
+        }
+
+        if (!$for_user->readNotification()) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Something went wrong!'
+            ]);
+            die;
+        }
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Notifications cleared!'
+        ]);
+        die;
+    }
+
+
     public function actionCreate()
     {
         $model = new User;
         if ($model->load(Yii::$app->request->post())) {
             if ($model->validate()) {
+                $model->password = Yii::$app->getSecurity()
+                                            ->generatePasswordHash($model->password);
                 $model->save();
                 return $this->redirect('/user/home', 302);
             }

@@ -3,6 +3,8 @@
 namespace app\models;
 
 use Yii;
+use app\models\Message;
+use app\models\Notification;
 
 /**
  * This is the model class for table "users".
@@ -80,18 +82,9 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getNotifications()
-    {
-        return $this->hasMany(Notifications::className(), ['user_id_to' => 'id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
     public function getSentNotifications()
     {
-        return $this->hasMany(Notifications::className(), ['user_id_from' => 'id'])
-                    ->where('read = :read AND status = :status', [':read' => 0, ':status' => 1]);
+        return $this->hasMany(Notification::className(), ['user_id_from' => 'id']);
     }
 
     /**
@@ -99,8 +92,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
      */
     public function getReceivedNotifications()
     {
-        return $this->hasMany(Notifications::className(), ['user_id_to' => 'id'])
-                    ->where('read = :read AND status = :status', [':read' => 0, ':status' => 1]);
+        return $this->hasMany(Notification::className(), ['user_id_to' => 'id']);
     }
 
 
@@ -175,10 +167,22 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
         $notification->user_id_from = $message->user_id_from;
         $notification->user_id_to = $message->user_id_to;
         $notification->content = 'You have received a new message.';
-        if ($notification->validate) {
+        if ($notification->validate()) {
             $notification->save();
             return true;
         }
         return false;
+    }
+
+
+    /**
+     * Mark notifications as read
+     *
+     * @return boolean if notification read successfully
+     */
+    public function readNotification()
+    {
+        $updated = Notification::updateAll(['read' => 1], "user_id_from = {$this->id}");
+        return $updated > 0;
     }
 }

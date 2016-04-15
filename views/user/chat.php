@@ -4,6 +4,7 @@
 use yii\helpers\Url;
 
 $this->title = 'Messaging App';
+
 ?>
 <div class="site-index">
 
@@ -15,13 +16,16 @@ $this->title = 'Messaging App';
 
                 <hr>
 
-                <div class="list-group">
+                <div class="list-group users-list-group">
                     <?php
                     if (!empty($users)) :
                         foreach ($users as $list_user) :
+                            $notification_count = count($list_user->sentNotifications);
                             ?>
-                                <a href="<?= Url::to(['user/chat', 'id' => $list_user->id]) ?>" class="list-group-item <?= $user->id === $list_user->id ? 'active' : '' ?>">
-                                    <span class="badge">0</span>
+                                <a href="<?= Url::to(['user/chat', 'id' => $list_user->id]) ?>" class="list-group-item user-list-item <?= $user->id === $list_user->id ? 'active' : '' ?>">
+                                    <span class="badge <?= $notification_count > 0 ? '' : 'hide' ?>">
+                                        <?= $notification_count ?>
+                                    </span>
                                     <?= $list_user->name; ?>
                                 </a>
                             <?php
