@@ -67,6 +67,10 @@ class UserController extends Controller
                              ->andWhere(['<>', 'id', $current_user->id])
                              ->one();
 
+        if (empty($first_user)) {
+            return $this->render('/user/none');
+        }
+
         return $this->redirect('/user/chat/' . $first_user->id, 302);
     }
 
