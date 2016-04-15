@@ -49,7 +49,11 @@ class SiteController extends Controller
 
     public function actionIndex()
     {
-        return $this->render('index');
+        if (!\Yii::$app->user->isGuest) {
+            return $this->redirect('/user/home', 302);
+        }
+
+        return $this->redirect('/site/login', 302);
     }
 
     public function actionLogin()

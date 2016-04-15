@@ -89,3 +89,54 @@ a.desc:after {
     padding: 10px 20px;
     margin: 0 0 15px 0;
 }
+
+.navbar-inverse {
+    background-color: #2b3964;
+    border-color: #1b274b;
+    box-shadow: 1px 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-inverse .navbar-brand,
+.navbar-inverse .btn-link,
+.navbar-inverse .navbar-nav > li > a {
+    color: #ffffff;
+}
+
+.navbar-inverse .btn-link > i,
+.navbar-inverse .navbar-nav > li > a > i {
+    font-size: 12px;
+}
+
+.navbar-inverse .navbar-nav > .active > a {
+    background-color: #111d42;
+    border-left: 1px solid #081438;
+    border-right: 1px solid #081438;
+}
+
+.navbar-brand .logo {
+    margin-right: 10px;
+}
+
+.navbar-nav .logout {
+    padding: 14px 15px;
+}
+
+.message-container {
+    min-height: 390px;
+}
+
+.site-login > h1,
+.user-create > h1 {
+    margin-top: 0;
+}
+
+.site-login .form-horizontal .form-group:last-child,
+.user-create .form-horizontal .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.list-group-item.active,
+.list-group-item.active:hover {
+    background-color: #768fdb;
+    border-color: #5770ba;
+}

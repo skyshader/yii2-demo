@@ -10,6 +10,8 @@ class m160414_112353_create_users_table extends Migration
         $this->createTable('users', [
             'id' => $this->primaryKey(),
 
+            'name' => $this->string(),
+
             'email' => $this->string()
                             ->notNull() # Email can not be blank
                             ->unique(), # Email should be unique
