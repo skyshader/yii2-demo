@@ -10,7 +10,7 @@ $(document).ready(function() {
 		if(!currentBadge.hasClass('hide')) {
 			setTimeout(function() {
 				clearNotification(currentBadge)
-			}, 4000);
+			}, 3000);
 		}
 	}
 });

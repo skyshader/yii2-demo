@@ -33,43 +33,43 @@ AppAsset::register($this);
             'class' => 'navbar-inverse navbar-fixed-top',
         ],
     ]);
+
+    $links = [];
+
+    if (!Yii::$app->user->isGuest && Yii::$app->user->identity->role === 1) {
+        array_push($links, [
+            'label' => '<i class="glyphicon glyphicon-plus"></i> Create User',
+            'url' => ['/user/create'],
+            'encode' => false
+        ]);
+    }
+
+    if (!Yii::$app->user->isGuest) {
+        array_push($links, [
+            'label' => '<i class="glyphicon glyphicon-home"></i> Home',
+            'url' => ['/user/home'],
+            'encode' => false
+        ]);
+
+        array_push($links, '<li>'
+            . Html::beginForm(['/site/logout'], 'post')
+            . Html::submitButton(
+                '<i class="glyphicon glyphicon-log-out"></i> Logout (' . Yii::$app->user->identity->name . ')',
+                ['class' => 'btn btn-link logout']
+            )
+            . Html::endForm()
+            . '</li>');
+    } else {
+        array_push($links, [
+            'label' => '<i class="glyphicon glyphicon-log-in"></i> Login',
+            'url' => ['/site/login'],
+            'encode' => false
+        ]);
+    }
+
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
-        'items' => [
-
-            Yii::$app->user->isGuest ? ['label'=>''] : (
-                [
-                    'label' => '<i class="glyphicon glyphicon-home"></i> Home',
-                    'url' => ['/user/home'],
-                    'encode' => false
-                ]
-            ),
-
-            !Yii::$app->user->isGuest && Yii::$app->user->identity->role === 1 ? (
-                [
-                    'label' => '<i class="glyphicon glyphicon-plus"></i> Create User',
-                    'url' => ['/user/create'],
-                    'encode' => false
-                ]
-            ) : ['label'=>''],
-
-            Yii::$app->user->isGuest ? (
-                [
-                    'label' => '<i class="glyphicon glyphicon-log-in"></i> Login',
-                    'url' => ['/site/login'],
-                    'encode' => false
-                ]
-            ) : (
-                '<li>'
-                . Html::beginForm(['/site/logout'], 'post')
-                . Html::submitButton(
-                    '<i class="glyphicon glyphicon-log-out"></i> Logout (' . Yii::$app->user->identity->name . ')',
-                    ['class' => 'btn btn-link logout']
-                )
-                . Html::endForm()
-                . '</li>'
-            ),
-        ],
+        'items' => $links,
     ]);
     NavBar::end();
     ?>
